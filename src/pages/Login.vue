@@ -1,5 +1,5 @@
 <template>
-  <button @click="login">Login</button>
+  <button @click="handle">Login</button>
 </template>
 
 <script lang="ts">
@@ -12,14 +12,14 @@ export default defineComponent({
     console.log('Inside Login')
 
     const router = useRouter()
-    const { user } = inject<Auth>('auth')!
+    const { login } = inject<Auth>('auth')!
 
-    const login = () => {
-      user.value = { id: 1, name: 'Erik', email: 'soc@erik.cat' }
+    const handle = () => {
+      login({ id: 1, name: 'Erik', email: 'soc@erik.cat' })
       router.push('/secret')
     }
 
-    return { login }
+    return { handle }
   },
 })
 </script>

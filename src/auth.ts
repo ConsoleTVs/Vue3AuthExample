@@ -1,4 +1,4 @@
-import { Plugin, ComputedRef, ref, Ref } from 'vue'
+import { Plugin, ComputedRef, ref, Ref, readonly, DeepReadonly } from 'vue'
 import { computed } from 'vue'
 import router from './router'
 
@@ -9,10 +9,12 @@ export interface User {
 }
 
 export interface Auth {
-  user: Ref<User | undefined>
-  isLoggedIn: ComputedRef<boolean>
-  initialized: Ref<boolean>
-  initialize: (initialization: () => Promise<void>) => Promise<void>
+  readonly user: DeepReadonly<Ref<User | undefined>>
+  readonly isLoggedIn: DeepReadonly<ComputedRef<boolean>>
+  readonly initialized: DeepReadonly<Ref<boolean>>
+  readonly initialize: (initialization: () => Promise<void>) => Promise<void>
+  readonly login: (loggedInUser: User) => void
+  readonly logout: () => void
 }
 
 export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
@@ -28,8 +30,17 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
       await initialization()
       initialized.value = true
     }
+    const login = (loggedInUser: User) => (user.value = loggedInUser)
+    const logout = () => (user.value = undefined)
     // Create the authentication state.
-    const auth: Auth = { isLoggedIn, user, initialized, initialize }
+    const auth: Auth = {
+      isLoggedIn: readonly(isLoggedIn),
+      user: readonly(user),
+      initialize: readonly(initialize),
+      initialized,
+      login,
+      logout,
+    }
     // Provides the application with the authentication
     // state for further use in the application.
     app.provide('auth', auth)

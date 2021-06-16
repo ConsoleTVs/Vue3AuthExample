@@ -1,6 +1,6 @@
 <template>
   <div>Secret Page!</div>
-  <button @click="logout">Logout</button>
+  <button @click="handle">Logout</button>
 </template>
 
 <script lang="ts">
@@ -13,14 +13,14 @@ export default defineComponent({
     console.log('Inside Secret')
 
     const router = useRouter()
-    const { user } = inject<Auth>('auth')!
+    const { logout } = inject<Auth>('auth')!
 
-    const logout = () => {
-      user.value = undefined
+    const handle = () => {
+      logout()
       router.push('/')
     }
 
-    return { logout }
+    return { handle }
   },
 })
 </script>
