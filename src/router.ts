@@ -6,7 +6,7 @@ declare module 'vue-router' {
   }
 }
 
-export const router = createRouter({
+export default createRouter({
   history: createWebHistory(),
   routes: [
     {
