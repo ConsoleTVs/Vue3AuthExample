@@ -14,9 +14,9 @@ export default defineComponent({
     const router = useRouter()
     const { login } = inject<Auth>('auth')!
 
-    const handle = () => {
-      login({ id: 1, name: 'Erik', email: 'soc@erik.cat' })
-      router.push('/secret')
+    const handle = async () => {
+      await login({ id: 1, name: 'Erik', email: 'soc@erik.cat' })
+      await router.push('/secret')
     }
 
     return { handle }

@@ -3,18 +3,21 @@ import { computed } from 'vue'
 import router from './router'
 
 export interface User {
-  id: number
-  name: string
-  email: string
+  readonly id: number
+  readonly name: string
+  readonly email: string
 }
 
 export interface Auth {
   readonly user: DeepReadonly<Ref<User | undefined>>
-  readonly isLoggedIn: DeepReadonly<ComputedRef<boolean>>
+  readonly loggedIn: DeepReadonly<Ref<boolean>>
   readonly initialized: DeepReadonly<Ref<boolean>>
   readonly initialize: (initialization: () => Promise<void>) => Promise<void>
-  readonly login: (loggedInUser: User) => void
-  readonly logout: () => void
+  readonly login: (
+    loggedInUser: User,
+    beforePopulate?: () => Promise<void>
+  ) => Promise<void>
+  readonly logout: (beforeCleanup?: () => Promise<void>) => Promise<void>
 }
 
 export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
@@ -22,7 +25,7 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
     // User information
     const user = ref<User | undefined>(undefined)
     // Some computation to determine if the user is logged in.
-    const isLoggedIn = computed(() => user.value !== undefined)
+    const loggedIn = ref(false)
     // Initialization logic.
     const initialized = ref(false)
     const initialize = async (initialization: () => Promise<void>) => {
@@ -30,14 +33,25 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
       await initialization()
       initialized.value = true
     }
-    const login = (loggedInUser: User) => (user.value = loggedInUser)
-    const logout = () => (user.value = undefined)
+    const login = async (
+      loggedInUser: User,
+      beforePopulate?: () => Promise<void>
+    ) => {
+      loggedIn.value = true
+      await beforePopulate?.()
+      user.value = loggedInUser
+    }
+    const logout = async (beforeCleanup?: () => Promise<void>) => {
+      loggedIn.value = false
+      await beforeCleanup?.()
+      user.value = undefined
+    }
     // Create the authentication state.
     const auth: Auth = {
-      isLoggedIn: readonly(isLoggedIn),
+      loggedIn: readonly(loggedIn),
       user: readonly(user),
-      initialize: readonly(initialize),
-      initialized,
+      initialized: readonly(initialized),
+      initialize,
       login,
       logout,
     }
@@ -50,7 +64,7 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
   }
 }
 
-export default createAuth(({ initialize, isLoggedIn }) => {
+export default createAuth(({ initialize, loggedIn }) => {
   router.beforeEach(async (to) => {
     // Perform initial checking for the user's
     // authentication state
@@ -63,9 +77,9 @@ export default createAuth(({ initialize, isLoggedIn }) => {
     // If the route has authentication logic and it
     // requires authentication, we need to check
     // if the user has loged in or not.
-    if (to.meta.auth! && !isLoggedIn.value) return '/login'
+    if (to.meta.auth! && !loggedIn.value) return '/login'
     // Otherwise, if the route does not require auth and
     // the user is logged in, we must cancel the nagivation.
-    if (!to.meta.auth! && isLoggedIn.value) return '/secret'
+    if (!to.meta.auth! && loggedIn.value) return '/secret'
   })
 })

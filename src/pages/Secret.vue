@@ -1,5 +1,6 @@
 <template>
   <div>Secret Page!</div>
+  <div>{{ JSON.stringify(user) }}</div>
   <button @click="handle">Logout</button>
 </template>
 
@@ -13,14 +14,15 @@ export default defineComponent({
     console.log('Inside Secret')
 
     const router = useRouter()
-    const { logout } = inject<Auth>('auth')!
+    const { user, logout } = inject<Auth>('auth')!
 
     const handle = () => {
-      logout()
-      router.push('/')
+      logout(async () => {
+        await router.push('/')
+      })
     }
 
-    return { handle }
+    return { user, handle }
   },
 })
 </script>
