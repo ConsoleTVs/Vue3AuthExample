@@ -10,4 +10,4 @@ that follows the vue conventions and, in addition, satisfies the following state
 - Uses `Composition API` and `Vue 3`
 - Uses `vue-router` to determine what pages are protected and what pages are not.
 - Does **not** use a global reactive variable that could theoretically be shared among apps and instead uses `provide/inject` to provide authentication on the app level.
-- HoC component to do the job instead of a plugin because `provide/inject` needs to be inside a `setup()`.
+- Plugin-based initialization.
