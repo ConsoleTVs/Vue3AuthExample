@@ -1,5 +1,5 @@
-import { Plugin, ComputedRef, Component, ref, Ref } from 'vue'
-import { h, computed, reactive, defineComponent, provide } from 'vue'
+import { Plugin, ComputedRef, ref, Ref } from 'vue'
+import { computed } from 'vue'
 import router from './router'
 
 export interface User {
