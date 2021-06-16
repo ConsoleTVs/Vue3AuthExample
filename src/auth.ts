@@ -15,9 +15,9 @@ export interface Auth {
   readonly initialize: (initialization: () => Promise<void>) => Promise<void>
   readonly login: (
     loggedInUser: User,
-    beforePopulate?: () => Promise<void>
+    beforePopulate?: () => Promise<void> | void
   ) => Promise<void>
-  readonly logout: (beforeCleanup?: () => Promise<void>) => Promise<void>
+  readonly logout: (beforeCleanup?: () => Promise<void> | void) => Promise<void>
 }
 
 export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
@@ -35,13 +35,13 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
     }
     const login = async (
       loggedInUser: User,
-      beforePopulate?: () => Promise<void>
+      beforePopulate?: () => Promise<void> | void
     ) => {
       loggedIn.value = true
       await beforePopulate?.()
       user.value = loggedInUser
     }
-    const logout = async (beforeCleanup?: () => Promise<void>) => {
+    const logout = async (beforeCleanup?: () => Promise<void> | void) => {
       loggedIn.value = false
       await beforeCleanup?.()
       user.value = undefined
