@@ -11,13 +11,25 @@ export interface User {
 export interface Auth {
   user: Ref<User | undefined>
   isLoggedIn: ComputedRef<boolean>
+  initialized: Ref<boolean>
+  initialize: (initialization: () => Promise<void>) => Promise<void>
 }
 
 export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
   return (app) => {
+    // User information
     const user = ref<User | undefined>(undefined)
+    // Some computation to determine if the user is logged in.
     const isLoggedIn = computed(() => user.value !== undefined)
-    const auth: Auth = { isLoggedIn, user }
+    // Initialization logic.
+    const initialized = ref(false)
+    const initialize = async (initialization: () => Promise<void>) => {
+      if (initialized.value) return
+      await initialization()
+      initialized.value = true
+    }
+    // Create the authentication state.
+    const auth: Auth = { isLoggedIn, user, initialized, initialize }
     // Provides the application with the authentication
     // state for further use in the application.
     app.provide('auth', auth)
@@ -27,8 +39,13 @@ export const createAuth = (bootstrap?: (auth: Auth) => void): Plugin => {
   }
 }
 
-export default createAuth(({ isLoggedIn }) => {
-  router.beforeEach((to) => {
+export default createAuth(({ initialize, isLoggedIn }) => {
+  router.beforeEach(async (to) => {
+    // Perform initial checking for the user's
+    // authentication state
+    await initialize(async () => {
+      // await fetch('...')
+    })
     // If the route we're navigating to has no
     // authentication logic, we can continue.
     if (to.meta.auth === undefined) return true
